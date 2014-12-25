@@ -5,6 +5,12 @@
  *
  * Dependencies: a clone of IRRemove by Ken Shirriff : https://github.com/eadf/Arduino-IRremote.git
  * 
+ * Connect an ordinary IR-Receiver directly to the arduino like this:
+ *
+ * IR receiver : *rduino   
+ * Vcc         : +5V or pin:POWER_PIN
+ * Gnd         : GND
+ * Signal      : pin: RECV_PIN
  */
 
 #include <IRremote.h>
@@ -63,17 +69,22 @@
 
 #endif
 
-static const int RECV_PIN = 2;
-static const int POWER_PIN = 3;
+static const int RECV_PIN = 2;  // I suspect this has to be one of the interrupt enabled pins
+static const int POWER_PIN = 3; // This pin is not really needed. It's just convenient for making a 3-pin connector for a Micro.  
 static const int SLOW_REPEAT = 125;
 static const int FAST_REPEAT = 25;
 
 IRrecv irrecv(RECV_PIN);
 decode_results results;
 
-void virtualKeyBoard(char key){
+void virtualKeyBoard(unsigned char key){
 #ifdef USE_KEYBOARD
-   Keyboard.press(key); 
+   Keyboard.press(key);
+#else
+#ifdef USE_SERIAL
+   Serial.print("Keypress:0x");
+   Serial.println(key, HEX);
+#endif
 #endif
 }
 
@@ -249,69 +260,69 @@ bool handleHauppauge(int codeValue) {
    case 0x6C3566C:
    case 0x6E3C936E:
       virtualSerialPrintln("Hauppauge 2");
-      virtualKeyBoard('1');
+      virtualKeyBoard('2');
       handled = true;
       delayValue = SLOW_REPEAT;
       break;
    case 0x42D5986:
    case 0x69F469B4:
       virtualSerialPrintln("Hauppauge 3");
-      virtualKeyBoard('1');
+      virtualKeyBoard('3');
       handled = true;
       delayValue = SLOW_REPEAT;
       break;
    case 0xBA16A8A2:
    case 0x8920CF74:
       virtualSerialPrintln("Hauppauge 4");
-      virtualKeyBoard('1');
+      virtualKeyBoard('4');
       handled = true;
       delayValue = SLOW_REPEAT;
       break;
    case 0xBB16AA35:
    case 0x8A20D107:
       virtualSerialPrintln("Hauppauge 5");
-      virtualKeyBoard('1');
+      virtualKeyBoard('5');
       handled = true;
       delayValue = SLOW_REPEAT;
       break;
    case 0xFB283EAD:
    case 0x94142E3B:
       virtualSerialPrintln("Hauppauge 6");
-      virtualKeyBoard('1');
+      virtualKeyBoard('6');
       handled = true;
       delayValue = SLOW_REPEAT;
       break;
    case 0x7BDA68A:
    case 0x83BCA2F0:
       virtualSerialPrintln("Hauppauge 7");
-      virtualKeyBoard('1');
+      virtualKeyBoard('7');
       handled = true;
       delayValue = SLOW_REPEAT;
       break;
    case 0x74E7452C:
    case 0xE35A24AA:
       virtualSerialPrintln("Hauppauge 8");
-      virtualKeyBoard('1');
+      virtualKeyBoard('8');
       handled = true;
       delayValue = SLOW_REPEAT;
       break;
    case 0xE45A263F:
    case 0x71E74075:
       virtualSerialPrintln("Hauppauge 9");
-      virtualKeyBoard('1');
+      virtualKeyBoard('9');
       handled = true;
       delayValue = SLOW_REPEAT;
       break;
    case 0xDBA39056:
    case 0x7A41B2FC:
       virtualSerialPrintln("Hauppauge 0");
-      virtualKeyBoard('1');
+      virtualKeyBoard('0');
       handled = true;
       delayValue = SLOW_REPEAT;
       break;
       
       
-   // No keyboard mappings for these   
+   // No keyboard mappings for these keys
    case 0xA2C9559A:
    case 0x5A552E28:
       virtualSerialPrintln("Hauppauge Rec");
@@ -345,11 +356,11 @@ void setup()
 {
 #ifdef USE_SERIAL  
   Serial.begin(9600);
-  delay(500);
   Serial.println("Running in serial mode - no key presses will be generated.");
 #endif
 #ifdef USE_KEYBOARD
   Keyboard.begin();
+  delay(500);
 #endif
   irrecv.enableIRIn(); // Start the receiver
   pinMode(POWER_PIN, OUTPUT);
