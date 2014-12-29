@@ -1,6 +1,6 @@
 /*
- * A simple IR receiver for MythTV.
- * It is intended for Arduinos with Keyboard emulation (Leonardo, Due, Micro etc, etc)
+ * A simple IR receiver to keyboard adapter for MythTV.
+ * It is intended for Arduinos with USB Keyboard emulation (Leonardo, Due, Micro etc, etc)
  * But i guess it could easily be converted to use a PS/2 keyboard library as well.
  *
  * Dependencies: a clone of IRRemove by Ken Shirriff : https://github.com/eadf/Arduino-IRremote.git
@@ -11,6 +11,12 @@
  * Vcc         : +5V or pin:POWER_PIN
  * Gnd         : GND
  * Signal      : pin: RECV_PIN
+ *
+ *
+ * The code is made with two 'modes':
+ * One mode intended for debugging and testing. No keycodes are generated and thus it is possible to test the code with a simple *duino.
+ * The other mode is 'live', no serial communication takes place and only keycodes are generated.
+ * Toggle the modes with '#define USE_KEYBOARD' or '#undef USE_KEYBOARD'
  */
 
 #include <IRremote.h>
@@ -19,10 +25,10 @@
 #define USE_KEYBOARD
 
 
-#ifndef USE_KEYBOARD
-  #define USE_SERIAL
-#else 
+#ifdef USE_KEYBOARD
   #undef USE_SERIAL
+#else 
+  #define USE_SERIAL
 #endif
 
 
@@ -70,9 +76,9 @@
 #endif
 
 static const int RECV_PIN = 2;  // I suspect this has to be one of the interrupt enabled pins
-static const int POWER_PIN = 3; // This pin is not really needed. It's just convenient for making a 3-pin connector for a Micro.  
-static const int SLOW_REPEAT = 125;
-static const int FAST_REPEAT = 25;
+static const int POWER_PIN = 3; // This pin is not really needed. It's just convenient when making a simple 3-pin connector for an Arduino Micro.  
+static const int SLOW_REPEAT = 150;
+static const int FAST_REPEAT = 50;
 
 IRrecv irrecv(RECV_PIN);
 decode_results results;
@@ -80,11 +86,10 @@ decode_results results;
 void virtualKeyBoard(unsigned char key){
 #ifdef USE_KEYBOARD
    Keyboard.press(key);
-#else
+#endif
 #ifdef USE_SERIAL
    Serial.print("Keypress:0x");
    Serial.println(key, HEX);
-#endif
 #endif
 }
 
@@ -244,7 +249,8 @@ bool handleHauppauge(int codeValue) {
     case 0xC5E2063C:
     case 0xF158F416:
       virtualSerialPrintln("Hauppauge Full");
-      virtualKeyBoard(KEY_RIGHT_ALT);
+      // This is keyboard shortut for xfce4 "full screen" mode
+      virtualKeyBoard(KEY_LEFT_ALT);
       virtualKeyBoard(KEY_F11);
       handled = true;
       delayValue = SLOW_REPEAT;
@@ -356,7 +362,9 @@ void setup()
 {
 #ifdef USE_SERIAL  
   Serial.begin(9600);
+#ifndef USE_KEYBOARD  
   Serial.println("Running in serial mode - no key presses will be generated.");
+#endif
 #endif
 #ifdef USE_KEYBOARD
   Keyboard.begin();
