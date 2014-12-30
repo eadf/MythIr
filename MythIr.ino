@@ -16,7 +16,12 @@
  * The code is made with two 'modes':
  * One mode intended for debugging and testing. No keycodes are generated and thus it is possible to test the code with a simple *duino.
  * The other mode is 'live', no serial communication takes place and only keycodes are generated.
+ *
  * Toggle the modes with '#define USE_KEYBOARD' or '#undef USE_KEYBOARD'
+ *
+ * #define USE_KEYBOARD => you must compile the program for an *duino with Keyboard emulation
+ * #undef USE_KEYBOARD  => you can debug and test on any *duino
+ *
  */
 
 #include <IRremote.h>
@@ -77,8 +82,8 @@
 
 static const int RECV_PIN = 2;  // I suspect this has to be one of the interrupt enabled pins
 static const int POWER_PIN = 3; // This pin is not really needed. It's just convenient when making a simple 3-pin connector for an Arduino Micro.  
-static const int SLOW_REPEAT = 150;
-static const int FAST_REPEAT = 50;
+static const int SLOW_REPEAT = 175;
+static const int FAST_REPEAT = 75;
 
 IRrecv irrecv(RECV_PIN);
 decode_results results;
